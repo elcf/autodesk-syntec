@@ -58,7 +58,7 @@ properties = {
     description: "Preloads the next tool at a tool change (if any).",
     group      : "preferences",
     type       : "boolean",
-    value      : true,
+    value      : false,
     scope      : "post"
   },
   showSequenceNumbers: {
