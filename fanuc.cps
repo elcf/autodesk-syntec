@@ -448,7 +448,7 @@ function writeComment(text) {
 }
 
 // Start of machine configuration logic
-var compensateToolLength = false; // add the tool length to the pivot distance for nonTCP rotary heads
+var compensateToolLength = true; // add the tool length to the pivot distance for nonTCP rotary heads
 
 // internal variables, do not change
 var receivedMachineConfiguration;
