@@ -267,7 +267,7 @@ wcsDefinitions = {
   useZeroOffset: false,
   wcs          : [
     {name:"Standard", format:"G", range:[54, 59]},
-    {name:"Extended", format:"G54.1 P", range:[1, 300]}
+    {name:"Extended", format:"G59.", range:[1, 9]}
   ]
 };
 
