@@ -10,14 +10,14 @@
   FORKID {04622D27-72F0-45d4-85FB-DB346FD1AE22}
 */
 
-description = "FANUC";
+description = "FANUC - Syntec A-axis mod";
 vendor = "Fanuc";
 vendorUrl = "http://www.fanuc.com";
 legal = "Copyright (C) 2012-2022 by Autodesk, Inc.";
 certificationLevel = 2;
 minimumRevision = 45793;
 
-longDescription = "Generic post for Fanuc.";
+longDescription = "Generic post for Fanuc modified for Syntec with A-axis (head swing).";
 
 extension = "nc";
 programNameIsInteger = true;
