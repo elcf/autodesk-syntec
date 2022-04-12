@@ -1,5 +1,3 @@
-# Autodesk Post Processor - FANUC
+# Autodesk Post Processor - Syntec
 
-Mirror of the post processor in [FANUC](https://cam.autodesk.com/hsmposts?p=fanuc).
-
-This repository is automatically updated.
+[FANUC](https://cam.autodesk.com/hsmposts?p=fanuc) post processor modified for a Syntec 4-axis milling machine.
