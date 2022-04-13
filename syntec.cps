@@ -37,6 +37,22 @@ highFeedrate = (unit == IN) ? 500 : 5000;
 
 // user-defined properties
 properties = {
+  useTableRotary: {
+    title      : "Use table rotary",
+    description: "Use the table rotary instead of the head rotary.",
+    group      : "multiAxis",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
+  useDPMFeeds: {
+    title      : "DPM feed",
+    description: "Use degree per minute feedrates instead of inverse time.",
+    group      : "multiAxis",
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
+  },
   writeMachine: {
     title      : "Write machine",
     description: "Output the machine settings in the header of the code.",
@@ -527,11 +543,14 @@ function getBodyLength(tool) {
 }
 
 function defineMachine() {
-  var useTCP = true;
-  if (false) { // note: setup your machine here
-    var aAxis = createAxis({coordinate:0, table:true, axis:[1, 0, 0], range:[-120, 120], preference:1, tcp:useTCP});
-    var cAxis = createAxis({coordinate:2, table:true, axis:[0, 0, 1], range:[-360, 360], preference:0, tcp:useTCP});
-    machineConfiguration = new MachineConfiguration(aAxis, cAxis);
+  var useTCP = false;
+  if (true) { // note: setup your machine here
+    if (!getProperty("useTableRotary")) { // Head rotary
+      var aAxis = createAxis({coordinate:0, table:false, axis:[0, -1, 0], range:[-135, 135], preference:0, tcp:useTCP, offset:[0, 0, toPreciseUnit(274.748, MM)]});
+    } else { // Table rotary
+      var aAxis = createAxis({coordinate:0, table:true, axis:[0, 1, 0], preference:0, tcp:useTCP});
+    }
+    machineConfiguration = new MachineConfiguration(aAxis);
 
     setMachineConfiguration(machineConfiguration);
     if (receivedMachineConfiguration) {
@@ -543,7 +562,7 @@ function defineMachine() {
   if (!receivedMachineConfiguration) {
     // multiaxis settings
     if (machineConfiguration.isHeadConfiguration()) {
-      machineConfiguration.setVirtualTooltip(false); // translate the pivot point to the virtual tool tip for nonTCP rotary heads
+      machineConfiguration.setVirtualTooltip(true); // translate the pivot point to the virtual tool tip for nonTCP rotary heads
     }
 
     // retract / reconfigure
