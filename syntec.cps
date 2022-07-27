@@ -4,8 +4,8 @@
 
   FANUC post processor configuration.
 
-  $Revision: 43733 514634d3e72da88fc022a99138c0e5374dbc073e $
-  $Date: 2022-04-01 18:27:40 $
+  $Revision: 43881 db98b97d59e631419324916a1773fdc9920ddccd $
+  $Date: 2022-07-14 15:33:51 $
 
   FORKID {04622D27-72F0-45d4-85FB-DB346FD1AE22}
 */
@@ -15,7 +15,7 @@ vendor = "Fanuc";
 vendorUrl = "http://www.fanuc.com";
 legal = "Copyright (C) 2012-2022 by Autodesk, Inc.";
 certificationLevel = 2;
-minimumRevision = 45793;
+minimumRevision = 45821;
 
 longDescription = "Generic post for Fanuc modified for Syntec with A-axis (head swing).";
 
@@ -79,11 +79,16 @@ properties = {
   },
   showSequenceNumbers: {
     title      : "Use sequence numbers",
-    description: "Use sequence numbers for each block of outputted code.",
+    description: "'Yes' outputs sequence numbers on each block, 'Only on tool change' outputs sequence numbers on tool change blocks only, and 'No' disables the output of sequence numbers.",
     group      : "formats",
-    type       : "boolean",
-    value      : true,
-    scope      : "post"
+    type       : "enum",
+    values     : [
+      {title:"Yes", id:"true"},
+      {title:"No", id:"false"},
+      {title:"Only on tool change", id:"toolChange"}
+    ],
+    value: "true",
+    scope: "post"
   },
   sequenceNumberStart: {
     title      : "Start sequence number",
@@ -112,7 +117,7 @@ properties = {
   o8: {
     title      : "8 Digit program number",
     description: "Specifies that an 8 digit program number is needed.",
-    group      : "preferences",
+    group      : "formats",
     type       : "boolean",
     value      : false,
     scope      : "post"
@@ -207,7 +212,7 @@ properties = {
   useG54x4: {
     title      : "Use G54.4",
     description: "Fanuc 30i supports G54.4 for workpiece error compensation.",
-    group      : "multiAxis",
+    group      : "probing",
     type       : "boolean",
     value      : false,
     scope      : "post"
@@ -370,8 +375,6 @@ var minimumCyclePoints = 5; // minimum number of points in cycle operation to co
 var cancelTiltFirst = true; // cancel G68.2 with G69 prior to G54-G59 WCS block
 var useABCPrepositioning = false; // position ABC axes prior to G68.2 block
 
-var WARNING_WORK_OFFSET = 0;
-
 var allowIndexingWCSProbing = false; // specifies that probe WCS with tool orientation is supported
 var probeVariables = {
   outputRotationCodes: false, // defines if it is required to output rotation codes
@@ -417,7 +420,7 @@ function writeBlock() {
   if (!text) {
     return;
   }
-  if (getProperty("showSequenceNumbers")) {
+  if (getProperty("showSequenceNumbers") == "true") {
     if (optionalSection || skipBlock) {
       if (text) {
         writeWords("/", "N" + sequenceNumber, text);
@@ -441,7 +444,7 @@ function writeBlock() {
 */
 function writeOptionalBlock() {
   skipBlock = true;
-  if (getProperty("showSequenceNumbers")) {
+  if (getProperty("showSequenceNumbers") == "true") {
     var words = formatWords(arguments);
     if (words) {
       writeWords("/", "N" + sequenceNumber, words);
@@ -454,6 +457,16 @@ function writeOptionalBlock() {
 
 function formatComment(text) {
   return "(" + filterText(String(text).toUpperCase(), permittedCommentChars).replace(/[()]/g, "") + ")";
+}
+
+/**
+  Writes the specified block - used for tool changes only.
+*/
+function writeToolBlock() {
+  var show = getProperty("showSequenceNumbers");
+  setProperty("showSequenceNumbers", (show == "true" || show == "toolChange") ? "true" : "false");
+  writeBlock(arguments);
+  setProperty("showSequenceNumbers", show);
 }
 
 /**
@@ -1259,49 +1272,15 @@ function setWorkPlane(abc) {
   currentWorkPlaneABC = abc;
 }
 
-var closestABC = false; // choose closest machine angles
-var currentMachineABC;
-
 function getWorkPlaneMachineABC(workPlane, _setWorkPlane, rotate) {
   var W = workPlane; // map to global frame
 
-  var abc = machineConfiguration.getABC(W);
-  if (closestABC) {
-    if (currentMachineABC) {
-      abc = machineConfiguration.remapToABC(abc, currentMachineABC);
-    } else {
-      abc = machineConfiguration.getPreferredABC(abc);
-    }
-  } else {
-    abc = machineConfiguration.getPreferredABC(abc);
-  }
-
-  try {
-    abc = machineConfiguration.remapABC(abc);
-    if (_setWorkPlane) {
-      currentMachineABC = abc;
-    }
-  } catch (e) {
-    error(
-      localize("Machine angles not supported") + ":"
-      + conditional(machineConfiguration.isMachineCoordinate(0), " A" + abcFormat.format(abc.x))
-      + conditional(machineConfiguration.isMachineCoordinate(1), " B" + abcFormat.format(abc.y))
-      + conditional(machineConfiguration.isMachineCoordinate(2), " C" + abcFormat.format(abc.z))
-    );
-  }
+  var currentABC = isFirstSection() ? new Vector(0, 0, 0) : getCurrentDirection();
+  var abc = machineConfiguration.getABCByPreference(W, currentABC, ABC, PREFER_PREFERENCE, ENABLE_ALL);
 
   var direction = machineConfiguration.getDirection(abc);
   if (!isSameDirection(direction, W.forward)) {
     error(localize("Orientation not supported."));
-  }
-
-  if (!machineConfiguration.isABCSupported(abc)) {
-    error(
-      localize("Work plane is not supported") + ":"
-      + conditional(machineConfiguration.isMachineCoordinate(0), " A" + abcFormat.format(abc.x))
-      + conditional(machineConfiguration.isMachineCoordinate(1), " B" + abcFormat.format(abc.y))
-      + conditional(machineConfiguration.isMachineCoordinate(2), " C" + abcFormat.format(abc.z))
-    );
   }
 
   if (rotate) {
@@ -1314,20 +1293,11 @@ function getWorkPlaneMachineABC(workPlane, _setWorkPlane, rotate) {
       setRotation(R);
     }
   }
-
   return abc;
 }
 
 function printProbeResults() {
   return currentSection.getParameter("printResults", 0) == 1;
-}
-
-var probeOutputWorkOffset = 1;
-
-function onParameter(name, value) {
-  if (name == "probe-output-work-offset") {
-    probeOutputWorkOffset = (value > 0) ? value : 1;
-  }
 }
 
 /** Returns true if the spatial vectors are significantly different. */
@@ -1459,7 +1429,7 @@ function subprogramStart(_initialPosition, _abc, _incremental) {
     "O" + oFormat.format(currentSubprogram) +
     conditional(comment, formatComment(comment.substr(0, maximumLineLength - 2 - 6 - 1)))
   );
-  setProperty("showSequenceNumbers", false);
+  setProperty("showSequenceNumbers", "false");
   if (_incremental) {
     setIncrementalMode(_initialPosition, _abc);
   }
@@ -1679,7 +1649,7 @@ function onSection() {
       disableLengthCompensation(false);
     }
     skipBlock = !insertToolCall;
-    writeBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
+    writeToolBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
     if (tool.comment) {
       writeComment(tool.comment);
     }
@@ -1947,6 +1917,7 @@ function setProbeAngleMethod() {
 /** Output rotation offset based on angular probing cycle. */
 function setProbeAngle() {
   if (probeVariables.outputRotationCodes) {
+    var probeOutputWorkOffset = currentSection.probeWorkOffset;
     validate(probeOutputWorkOffset <= 6, "Angular Probing only supports work offsets 1-6.");
     if (probeVariables.probeAngleMethod == "G68" && (Vector.diff(currentSection.getGlobalInitialToolAxis(), new Vector(0, 0, 1)).length > 1e-4)) {
       error(localize("You cannot use multi axis toolpaths while G68 Rotation is in effect."));
@@ -2225,6 +2196,10 @@ function onCyclePoint(x, y, z) {
       );
       break;
     case "reaming":
+      if (feedFormat.getResultingValue(cycle.feedrate) != feedFormat.getResultingValue(cycle.retractFeedrate)) {
+        expandCyclePoint(x, y, z);
+        break;
+      }
       if (P > 0) {
         writeBlock(
           gRetractModal.format(98), gCycleModal.format(89),
@@ -2260,6 +2235,10 @@ function onCyclePoint(x, y, z) {
       );
       break;
     case "boring":
+      if (feedFormat.getResultingValue(cycle.feedrate) != feedFormat.getResultingValue(cycle.retractFeedrate)) {
+        expandCyclePoint(x, y, z);
+        break;
+      }
       if (P > 0) {
         writeBlock(
           gRetractModal.format(98), gCycleModal.format(89),
@@ -2659,6 +2638,7 @@ function onCyclePoint(x, y, z) {
 
 function getProbingArguments(cycle, updateWCS) {
   var outputWCSCode = updateWCS && currentSection.strategy == "probe";
+  var probeOutputWorkOffset = currentSection.probeWorkOffset;
   if (outputWCSCode) {
     validate(probeOutputWorkOffset <= 99, "Work offset is out of range.");
     var nextWorkOffset = hasNextSection() ? getNextSection().workOffset == 0 ? 1 : getNextSection().workOffset : -1;
@@ -3073,11 +3053,6 @@ function onSectionEnd() {
     }
   }
 
-  // the code below gets the machine angles from previous operation.  closestABC must also be set to true
-  if (currentSection.isMultiAxis() && currentSection.isOptimizedForMachine()) {
-    currentMachineABC = currentSection.getFinalToolAxisABC();
-  }
-
   if (isProbeOperation()) {
     writeBlock(gFormat.format(65), "P" + 9833); // spin the probe off
     if (probeVariables.probeAngleMethod != "G68") {
@@ -3237,7 +3212,7 @@ function inspectionWriteCADTransform() {
 }
 
 function inspectionWriteWorkplaneTransform() {
-  var orientation = (machineConfiguration.isMultiAxisConfiguration() && currentMachineABC != undefined) ? machineConfiguration.getOrientation(currentMachineABC) : currentSection.workPlane;
+  var orientation = machineConfiguration.isMultiAxisConfiguration() ? machineConfiguration.getOrientation(getCurrentDirection()) : currentSection.workPlane;
   var abc = orientation.getEuler2(EULER_XYZ_S);
   writeln("DPRNT[G330" +
     "*N" + getPointNumber() +
