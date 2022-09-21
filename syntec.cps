@@ -37,6 +37,14 @@ highFeedrate = (unit == IN) ? 500 : 5000;
 
 // user-defined properties
 properties = {
+  useHardcodedMachineConfiguration: {
+    title      : "Use hardcoded machine configuration",
+    description: "Force the use of the post's hardcoded machine configuration.",
+    group      : "preferences",
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
+  },
   useTableRotary: {
     title      : "Use table rotary",
     description: "Use the table rotary instead of the head rotary.",
@@ -557,7 +565,7 @@ function getBodyLength(tool) {
 
 function defineMachine() {
   var useTCP = false;
-  if (true) { // note: setup your machine here
+  if (useHardcodedMachineConfiguration || !receivedMachineConfiguration) { // note: setup your hardcoded machine here
     if (!getProperty("useTableRotary")) { // Head rotary
       var aAxis = createAxis({coordinate:0, table:false, axis:[0, -1, 0], range:[-135, 135], preference:0, tcp:useTCP, offset:[0, 0, toPreciseUnit(274.748, MM)]});
     } else { // Table rotary
