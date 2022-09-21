@@ -565,7 +565,7 @@ function getBodyLength(tool) {
 
 function defineMachine() {
   var useTCP = false;
-  if (useHardcodedMachineConfiguration || !receivedMachineConfiguration) { // note: setup your hardcoded machine here
+  if (getProperty("useHardcodedMachineConfiguration") || !receivedMachineConfiguration) { // note: setup your hardcoded machine here
     if (!getProperty("useTableRotary")) { // Head rotary
       var aAxis = createAxis({coordinate:0, table:false, axis:[0, -1, 0], range:[-135, 135], preference:0, tcp:useTCP, offset:[0, 0, toPreciseUnit(274.748, MM)]});
     } else { // Table rotary
