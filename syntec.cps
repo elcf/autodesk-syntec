@@ -1296,9 +1296,13 @@ function getWorkPlaneMachineABC(workPlane, _setWorkPlane, rotate) {
     if (tcp) {
       setRotation(W); // TCP mode
     } else {
-      var O = machineConfiguration.getOrientation(abc);
-      var R = machineConfiguration.getRemainingOrientation(abc, W);
-      setRotation(R);
+      if (!currentSection.isOptimizedForMachine()) {
+        machineConfiguration.setToolLength(getBodyLength(currentSection.getTool()));
+        currentSection.optimize3DPositionsByMachine(machineConfiguration, abc, OPTIMIZE_AXIS);
+      }
+      // var O = machineConfiguration.getOrientation(abc);
+      // var R = machineConfiguration.getRemainingOrientation(abc, W);
+      // setRotation(R);
     }
   }
   return abc;
