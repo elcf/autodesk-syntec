@@ -2002,7 +2002,8 @@ function onCyclePoint(x, y, z) {
       cycleNotSupported();
     }
   }
-  if (!isSameDirection(getRotation().forward, new Vector(0, 0, 1))) {
+  // if (!isSameDirection(getRotation().forward, new Vector(0, 0, 1))) {
+  if (!is3D()) {
     expandCyclePoint(x, y, z);
     return;
   }
