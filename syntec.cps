@@ -2003,7 +2003,7 @@ function onCyclePoint(x, y, z) {
     }
   }
   // if (!isSameDirection(getRotation().forward, new Vector(0, 0, 1))) {
-  if (!is3D()) {
+  if (!isSameDirection(currentSection.workPlane.forward, new Vector(0, 0, 1))) {
     expandCyclePoint(x, y, z);
     return;
   }
