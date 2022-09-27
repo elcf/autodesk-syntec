@@ -1800,15 +1800,30 @@ function onSection() {
       );
       lengthCompensationActive = true;
     } else {
-      skipBlock = _skipBlock;
-      writeBlock(
-        gAbsIncModal.format(90),
-        gMotionModal.format(0),
-        gFormat.format(getOffsetCode()),
-        xOutput.format(initialPosition.x),
-        yOutput.format(initialPosition.y),
-        zOutput.format(initialPosition.z), hFormat.format(lengthOffset)
-      );
+      if (isSameDirection(currentSection.workPlane.forward, new Vector(0, 0, 1))) {
+        skipBlock = _skipBlock;
+        writeBlock(
+          gAbsIncModal.format(90),
+          gMotionModal.format(0),
+          gFormat.format(getOffsetCode()),
+          xOutput.format(initialPosition.x),
+          yOutput.format(initialPosition.y),
+          zOutput.format(initialPosition.z), hFormat.format(lengthOffset)
+        );
+      } else { // for 3+2 operations, move x and y first
+        skipBlock = _skipBlock;
+        writeBlock(
+          gAbsIncModal.format(90),
+          gMotionModal.format(0),
+          xOutput.format(initialPosition.x),
+          yOutput.format(initialPosition.y)
+        );
+        skipBlock = _skipBlock;
+        writeBlock(
+          gFormat.format(getOffsetCode()),
+          zOutput.format(initialPosition.z), hFormat.format(lengthOffset)
+        );
+      }
       lengthCompensationActive = true;
     }
     zIsOutput = true;
