@@ -2051,7 +2051,7 @@ function onCyclePoint(x, y, z) {
     if (getProperty("useG95")) {
       F /= spindleSpeed;
     }
-    var P = !cycle.dwell ? 0 : clamp(1, cycle.dwell * 1000, 99999999); // in milliseconds
+    var P = !cycle.dwell ? 0 : clamp(1, cycle.dwell * 1, 99999999); // in seconds
 
     var forceCycle = false;
     switch (cycleType) {
