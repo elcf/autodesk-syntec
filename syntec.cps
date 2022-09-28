@@ -2627,7 +2627,7 @@ function onCyclePoint(x, y, z) {
         cycleSubprogramIsActive = false;
       } else {
         // call subprogram
-        writeBlock(mFormat.format(98), "P" + oFormat.format(currentSubprogram));
+        writeBlock(mFormat.format(98), "H" + oFormat.format(currentSubprogram));
         subprogramStart(new Vector(x, y, z), new Vector(0, 0, 0), false);
       }
     }
