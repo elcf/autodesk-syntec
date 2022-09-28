@@ -1371,7 +1371,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
       }
 
       // call subprogram
-      writeBlock(mFormat.format(98), "P" + oFormat.format(currentSubprogram));
+      writeBlock(mFormat.format(98), "H" + oFormat.format(currentSubprogram));
       patternIsActive = true;
 
       if (firstPattern) {
