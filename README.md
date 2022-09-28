@@ -2,6 +2,9 @@
 
 [FANUC](https://cam.autodesk.com/hsmposts?p=fanuc) post processor modified for a Syntec milling machine.
 
+## Notes
+- The Fusion 360 post library now has an official [Syntec post processor](https://cam.autodesk.com/hsmposts?p=syntec).
+
 ## Autodesk Post Processor Resources
 - [How to find or customize Post Processors for Fusion 360, Inventor CAM, and HSMWorks](https://knowledge.autodesk.com/support/fusion-360/learn-explore/caas/sfdcarticles/sfdcarticles/Request-for-post-processors-for-Fusion-360-or-HSM-product.html)
 - [Autodesk Post Processor Forum](https://forums.autodesk.com/t5/post-processors/bd-p/218)
