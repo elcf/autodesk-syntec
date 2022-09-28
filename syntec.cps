@@ -1421,7 +1421,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
   // Output each operation as a subprogram
   if (!usePattern && (getProperty("useSubroutines") == "allOperations")) {
     currentSubprogram = ++lastSubprogram;
-    writeBlock(mFormat.format(98), "P" + oFormat.format(currentSubprogram));
+    writeBlock(mFormat.format(98), "H" + oFormat.format(currentSubprogram));
     firstPattern = true;
     subprogramStart(_initialPosition, _abc, false);
   }
@@ -1440,7 +1440,7 @@ function subprogramStart(_initialPosition, _abc, _incremental) {
     comment = getParameter("operation-comment");
   }
   writeln(
-    "O" + oFormat.format(currentSubprogram) +
+    "N" + oFormat.format(currentSubprogram) +
     conditional(comment, formatComment(comment.substr(0, maximumLineLength - 2 - 6 - 1)))
   );
   setProperty("showSequenceNumbers", "false");
