@@ -72,7 +72,7 @@ properties = {
       {title:"X and Y hold position", id:"hold"},
       {title:"X and Y move to hardcoded machine coordinates", id:"custom"}
     ],
-    value: "custom",
+    value: "hold",
     scope: "post"
   },
   stopSpindleSoon: {
