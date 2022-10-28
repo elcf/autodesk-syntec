@@ -62,7 +62,7 @@ properties = {
     scope      : "post"
   },
   closePosition: {
-    title      : "Position at program end.",
+    title      : "Position at program end",
     description: "Select the position to travel at the end of the program. Z always returns to home.",
     group      : "preferences",
     type       : "enum",
@@ -73,6 +73,14 @@ properties = {
       {title:"X and Y move to hardcoded machine coordinates", id:"custom"}
     ],
     value: "custom",
+    scope: "post"
+  },
+  stopSpindleSoon: {
+    title      : "Stop spindle as soon as milling is complete",
+    description: "If true, the spindle will stop as soon as milling is complete. If false, the spindle will stop after reaching program end position.",
+    group      : "preferences",
+    type       : "boolean",
+    value: false,
     scope: "post"
   },
   writeMachine: {
@@ -3358,6 +3366,10 @@ function onClose() {
   optionalSection = false;
 
   onCommand(COMMAND_COOLANT_OFF);
+
+  if (getProperty("stopSpindleSoon")) {
+    onCommand(COMMAND_STOP_SPINDLE); // stop spindle
+  }
 
   writeRetract(Z); // retract
 
