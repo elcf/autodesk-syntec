@@ -61,6 +61,20 @@ properties = {
     value      : true,
     scope      : "post"
   },
+  closePosition: {
+    title      : "Position at program end.",
+    description: "Select the position to travel at the end of the program. Z always returns to home.",
+    group      : "preferences",
+    type       : "enum",
+    values     : [
+      {title:"X and Y return to home", id:"allHome"},
+      {title:"X return to home and Y hold position", id:"xHome"},
+      {title:"X and Y hold position", id:"hold"},
+      {title:"X and Y move to hardcoded machine coordinates", id:"custom"}
+    ],
+    value: "custom",
+    scope: "post"
+  },
   writeMachine: {
     title      : "Write machine",
     description: "Output the machine settings in the header of the code.",
@@ -3358,7 +3372,13 @@ function onClose() {
     writeBlock(gFormat.format(54.4), "P0");
   }
 
-  writeRetract(X, Y); // return to home
+  if (getProperty("closePosition") == "allHome") {
+    writeRetract(X, Y); // return X and Y to home
+  } else if (getProperty("closePosition") == "xHome") {
+    writeRetract(X); // return X to home
+  } else if (getProperty("closePosition") == "custom") {
+    writeBlock(gAbsIncModal.format(90), gFormat.format(53), gMotionModal.format(0), "X" + xyzFormat.format(toPreciseUnit(0, MM)), "Y" + xyzFormat.format(toPreciseUnit(2500, MM))); // travel to custom location
+  }
 
   onImpliedCommand(COMMAND_END);
   onImpliedCommand(COMMAND_STOP_SPINDLE);
